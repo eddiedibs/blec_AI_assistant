@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -21,6 +23,12 @@
         @apply absolute w-auto p-2 m-2 min-w-max left-14
         rounded-md shadow-md text-white bg-purple-900
         text-xs font-bold transition-all duration-100 scale-0 origin-left
+
+    }
+    .send-btn{
+        @apply px-5 py-3 text-white bg-purple-800 
+        rounded-lg hover:rounded-xl transition-all duration-200
+        ease-linear hover:bg-magenta
 
     }
 }
