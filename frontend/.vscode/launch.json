@@ -1,0 +1,37 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      // {
+      //   "type": "node",
+      //   "request": "launch",
+      //   "name": "Start Webpack",
+      //   "program": "${workspaceFolder}/node_modules/webpack/bin/webpack.js",
+      //   "args": [
+      //     "--mode", "development",
+      //     "--watch"
+      //   ],
+      //   "cwd": "${workspaceFolder}",
+      //   "console": "integratedTerminal",
+      //   "internalConsoleOptions": "neverOpen",
+      //   "env": {
+      //     "NODE_ENV": "development"
+      //   }
+      // },
+      {
+        "type": "chrome",
+        "request": "launch",
+        "name": "Debug in Chrome",
+        "url": "http://localhost:3000",  // Replace with your dev server URL
+        "webRoot": "${workspaceFolder}/src",
+        "sourceMaps": true,
+        // "runtimeExecutable": "/path/to/chrome"  // Replace with the path to your Chrome executable
+      }
+    ],
+    // "compounds": [
+    //   {
+    //     "name": "Webpack & Chrome",
+    //     "configurations": ["Start Webpack", "Debug in Chrome"]
+    //   }
+    // ]
+  }
+  
