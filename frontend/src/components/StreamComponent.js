@@ -1,19 +1,26 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { fetchBlecAiData } from '../logic/sendRequest'; // Adjust path as needed
 
-function StreamComponent({ inputMsg, csrftoken }) {
-    const [messages, setMessages] = useState('');
+function StreamComponent({ inputMsg, csrftoken, onStreamUpdate  }) {
+    const lastProcessedMsg = useRef(null);
 
     useEffect(() => {
-        if (inputMsg) {
-            console.log("PASSED:: ", inputMsg)
-            fetchBlecAiData({ request_instruction: inputMsg }, csrftoken, (newMessage) => {
-                setMessages((prevMessages) => prevMessages + '\n' + newMessage); // Append new messages
-            });
+        if (inputMsg && lastProcessedMsg.current !== inputMsg) {
+            lastProcessedMsg.current = inputMsg; // Mark the current inputMsg as processed
+            fetchBlecAiData(
+                { request_instruction: inputMsg },
+                csrftoken,
+                (chunk) => {
+                    if (onStreamUpdate) {
+                        onStreamUpdate(chunk); // Pass each chunk to the parent
+                    }
+                }
+            );
         }
-    }, [inputMsg, csrftoken]);
+    }, [inputMsg, csrftoken, onStreamUpdate]);
 
-    return <p>{messages}</p>;
+    return null; // This component does not render anything
 }
+
 
 export default StreamComponent;

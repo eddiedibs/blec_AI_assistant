@@ -22,3 +22,13 @@ Then we can start our django development server:
 ./manage.py runserver 8080
 
 ```
+
+
+If we are debugging the frontend side:
+
+```
+# blec_proj/frontend
+
+npm run debug
+
+```

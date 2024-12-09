@@ -32,6 +32,10 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = str(os.environ.get('DEBUG')) == '1'
 
+OLLAMA_HOST = os.getenv('OLLAMA_HOST')
+OLLAMA_PORT = os.getenv('OLLAMA_PORT')
+OLLAMA_INIT_INSTRUCT = os.getenv('OLLAMA_INIT_INSTRUCT')
+
 
 if DEBUG:
 
@@ -42,7 +46,7 @@ if DEBUG:
             'USER' : 'postgres',
             'PASSWORD' : '123456',
             'HOST' : 'localhost',
-            'PORT' : '5421',
+            'PORT' : '5432',
             }
         }
     ALLOWED_HOSTS = json.loads(os.environ['ALLOWED_HOST'])
@@ -61,6 +65,11 @@ INSTALLED_APPS = [
 
     'api.apps.ApiConfig',
     'frontend.apps.FrontendConfig',
+   'corsheaders',
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
 ]
 
 MIDDLEWARE = [

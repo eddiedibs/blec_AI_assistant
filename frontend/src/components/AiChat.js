@@ -22,42 +22,77 @@ const ChatTitleText = () => (
 const ChatActionButtons = () => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  const [isMessageSent, setIsMessageSent] = useState(false); // To track whether the message has been sent
+  const [currentBotMessageId, setCurrentBotMessageId] = useState(null);
 
-  const sendMessage = (e) => {
+  const sendMessage = async (e) => {
     e.preventDefault();
-    if (newMessage.trim()) {
-      setMessages([...messages, { id: Date.now(), text: newMessage }]);
-      setNewMessage('');
-      setIsMessageSent(true);  // Mark that a message is sent
-    }
+
+    if (!newMessage.trim()) return;
+
+    // Add the user's message
+    const userMessage = { id: Date.now(), text: newMessage, sender: 'user' };
+    setMessages((prev) => [...prev, userMessage]);
+    setNewMessage('');
+
+    // Add a placeholder for the chatbot's response
+    const botMessageId = Date.now() + 1;
+    setMessages((prev) => [
+        ...prev,
+        { id: botMessageId, text: '', sender: 'chatbot' },
+    ]);
+    setCurrentBotMessageId(botMessageId);
   };
 
-  return (
-    <div className="w-full h-full flex flex-col justify-end bg-white p-6 rounded-lg">
+  const handleStreamUpdate = (partialResponse) => {
+    setMessages((prev) =>
+      prev.map((message) =>
+        message.id === currentBotMessageId
+          ? { ...message, text: message.text + partialResponse }
+          : message
+      )
+    );
+  };
+
+return (
+  <div className="w-full h-full flex flex-col justify-end bg-white p-6 rounded-lg">
       <div className="space-y-4 overflow-auto max-h-96">
-        {messages.map((message) => (
-          <p key={message.id} className="p-2 bg-blue-100 rounded-lg">{message.text}</p>
-        ))}
-        
-        {/* Render StreamComponent only after message is sent */}
-        {isMessageSent && (
-          <StreamComponent inputMsg={messages[messages.length - 1].text} csrftoken={csrftoken} />
-        )}
+          {messages.map((message) => (
+              <p
+                  key={message.id}
+                  className={`p-2 rounded-lg ${
+                      message.sender === 'user'
+                          ? 'bg-blue-100 self-end text-right'
+                          : 'bg-gray-200 self-start text-left'
+                  }`}
+              >
+                  {message.text}
+              </p>
+          ))}
+
+          {/* Render StreamComponent only for the active stream */}
+          {currentBotMessageId && (
+              <StreamComponent
+                  inputMsg={messages[messages.length - 2]?.text} // Send the latest user message
+                  csrftoken={csrftoken}
+                  onStreamUpdate={handleStreamUpdate} // Callback for stream updates
+              />
+          )}
       </div>
 
-      <form onSubmit={sendMessage} className="flex space-x-4">
-        <input
-          type="text"
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Type a message..."
-          className="flex-grow px-5 py-3 border rounded-lg focus:outline-none"
-        />
-        <button type="submit" className="send-btn">Send</button>
+      <form onSubmit={sendMessage} className="flex space-x-4 mt-4">
+          <input
+              type="text"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              placeholder="Type a message..."
+              className="flex-grow px-5 py-3 border rounded-lg focus:outline-none"
+          />
+          <button type="submit" className="send-btn">
+              Send
+          </button>
       </form>
-    </div>
-  );
+  </div>
+);
 };
 
 export default ChatUI;

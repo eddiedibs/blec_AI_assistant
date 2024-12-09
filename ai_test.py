@@ -1,4 +1,4 @@
-#!/home/edd1e/scripts/projs/other/aitest/venv/bin/python3
+#!/home/edd1e/scripts/projs/portfolio_stuff/blec_proj/venv/bin/python3
 
 from ollama import Client
 import sys
