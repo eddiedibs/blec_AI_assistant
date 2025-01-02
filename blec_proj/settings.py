@@ -47,10 +47,24 @@ if DEBUG:
             'PASSWORD' : '123456',
             'HOST' : 'localhost',
             'PORT' : '5432',
-            }
+            },
+        'mongodb': {
+            'ENGINE': 'djongo',
+            'NAME': 'blec_mongo_db',
+            'HOST': 'localhost',
+            'PORT': 27017,
+            'USER': '',
+            'PASSWORD': '',
+            'AUTH_SOURCE': 'admin',
+            'AUTH_MECHANISM': 'SCRAM-SHA-1',
+    }
         }
-    ALLOWED_HOSTS = json.loads(os.environ['ALLOWED_HOST'])
+    # ALLOWED_HOSTS = json.loads(os.environ['ALLOWED_HOST'])
+    ALLOWED_HOSTS = ["127.0.0.1", "localhost", "192.168.1.105", "172.23.108.251"]
     CSRF_TRUSTED_ORIGINS= json.loads(os.environ['CSRF_TRUSTED_ORIGINS'])
+
+
+DATABASE_ROUTERS = ['api.database_router.MongoRouter']
 
 
 # Application definition
@@ -64,6 +78,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'api.apps.ApiConfig',
+    'users.apps.UsersConfig',
     'frontend.apps.FrontendConfig',
    'corsheaders',
 ]

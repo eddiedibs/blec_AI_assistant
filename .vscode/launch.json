@@ -10,7 +10,7 @@
             "request": "launch",
             "args": [
                 "runserver",
-                "8003"
+                "8080"
             ],
             "django": true,
             "autoStartBrowser": false,
