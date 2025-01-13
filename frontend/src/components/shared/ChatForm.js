@@ -1,5 +1,9 @@
+
+"use client"
 import React, { useState, useEffect } from 'react';
 import axios from "axios";
+import { Datepicker } from "flowbite-react";
+import { CustomFlowbiteTheme } from "flowbite-react";
 
 const ChatForm = ({ onSubmit }) => {
     const [options, setOptions] = useState([]);
@@ -21,12 +25,21 @@ const ChatForm = ({ onSubmit }) => {
     // Handle selection change
     const handleChange = (event) => {
       setSelectedOption(event.target.value);
-      console.log("Selected:", event.target.value); // Use this value as needed
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
         onSubmit(); // Notify parent component
+    };
+
+    const customTheme = {
+        popup: {
+            root: {
+            base: "absolute bottom-10 z-50 block pt-2",
+            inline: "relative top-0 z-auto",
+            inner: "inline-block rounded-lg bg-white p-4 shadow-lg dark:bg-gray-700",
+            },
+        },
     };
 
 return (
@@ -48,9 +61,12 @@ return (
                 <input type="id_number" id="id_number" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="eg. 11254879" required />
             </div> 
             <div class="mb-2">
-                <label for="phone_number" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Número telefónico</label>
-                <input type="phone_number" id="phone_number" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="eg. 042412345678" required />
+                <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Correo electrónico</label>
+                <input type="email" id="email" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="eg. ejemplo@gmail.com" required />
             </div> 
+            <div>
+                <Datepicker theme={customTheme}/>
+            </div>
         </div>
         
         <div class="mb-2">

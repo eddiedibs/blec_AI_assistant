@@ -3,7 +3,14 @@ const flowbite = require("flowbite-react/tailwind");
 
 
 module.exports = {
+  // resolve: {
+  //   alias: {
+  //     'flowbite': path.resolve(__dirname, 'node_modules/flowbite'),
+  //   },
+  // },
   content: [
+    "./node_modules/flowbite-react/**/*.js", 
+    "./src/**/*.{js,jsx,ts,tsx}",
     flowbite.content(),
   ],
   mode: 'jit',
@@ -38,5 +45,6 @@ module.exports = {
   },
   plugins: [
     flowbite.plugin(),
+    require('flowbite/plugin'),
   ],
 }
