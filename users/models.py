@@ -48,8 +48,10 @@ class Doctor(models.Model):
 
 
 class Patient(models.Model):
-    name = models.CharField(max_length=100)
-    contact = models.CharField(max_length=15, blank=True, null=True)
+    first_name = models.CharField(max_length=100, default="")
+    last_name = models.CharField(max_length=100, default="")
+    id_number = models.CharField(max_length=30, default="")
+    contact_number = models.CharField(max_length=15, blank=True, null=True, default="")
     email = models.EmailField(blank=True, null=True)
     date_of_birth = models.DateField(blank=True, null=True)
 

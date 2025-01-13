@@ -7,7 +7,7 @@ export const fetchBlecAiData = async (myInput, csrftoken, onMessageReceived) => 
     method: "POST",
     headers: {
       'Content-Type': 'application/json',
-      // 'X-CSRFToken': csrftoken, // Uncomment if CSRF token is required
+      'X-CSRFToken': csrftoken, // Uncomment if CSRF token is required
     },
     body: JSON.stringify(myInput),
   }).then((res) => {

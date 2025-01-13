@@ -8,8 +8,8 @@ class DoctorAdmin(admin.ModelAdmin):
 
 @admin.register(Patient)
 class PatientAdmin(admin.ModelAdmin):
-    list_display = ['name', 'contact', 'email']
-    search_fields = ['name']
+    list_display = ['first_name', 'last_name','contact_number', 'email']
+    search_fields = ['first_name']
 
 @admin.register(Appointment)
 class AppointmentAdmin(admin.ModelAdmin):

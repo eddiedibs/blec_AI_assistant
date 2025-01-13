@@ -1,13 +1,29 @@
 import React, { useState } from 'react';
 import { fetchBlecAiData } from '../logic/sendRequest'; // Adjust the import path as needed
+import { motion } from 'framer-motion';
 import StreamComponent from '../components/StreamComponent';
+import ChatForm from '../components/shared/ChatForm';
 
 const ChatUI = () => {
-
+  const [isChatFormSubmitted, setIsChatFormSubmitted] = useState(false);
+    // Animation variants
+  const formVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+  };
   return (
     <div className='w-full h-screen flex flex-col'>
       <ChatTitleText />
-      <ChatActionButtons />
+      <ChatActionButtons isChatFormSubmitted={isChatFormSubmitted} />
+      {!isChatFormSubmitted && (
+          <motion.div
+          variants={formVariants}
+          initial="hidden"
+          animate="visible"
+        >
+        <ChatForm onSubmit={() => setIsChatFormSubmitted(true)} />
+       </motion.div>
+      )}
     </div>
   );
 };
@@ -19,7 +35,7 @@ const ChatTitleText = () => (
   </div>
 );
 
-const ChatActionButtons = () => {
+const ChatActionButtons = ({ isChatFormSubmitted }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [currentBotMessageId, setCurrentBotMessageId] = useState(null);
@@ -29,16 +45,14 @@ const ChatActionButtons = () => {
 
     if (!newMessage.trim()) return;
 
-    // Add the user's message
     const userMessage = { id: Date.now(), text: newMessage, sender: 'user' };
     setMessages((prev) => [...prev, userMessage]);
     setNewMessage('');
 
-    // Add a placeholder for the chatbot's response
     const botMessageId = Date.now() + 1;
     setMessages((prev) => [
-        ...prev,
-        { id: botMessageId, text: '', sender: 'chatbot' },
+      ...prev,
+      { id: botMessageId, text: '', sender: 'chatbot' },
     ]);
     setCurrentBotMessageId(botMessageId);
   };
@@ -53,46 +67,50 @@ const ChatActionButtons = () => {
     );
   };
 
-return (
-  <div className="w-full h-full flex flex-col justify-end bg-white p-6 rounded-lg">
-      <div className="space-y-4 overflow-auto max-h-96">
-          {messages.map((message) => (
-              <p
-                  key={message.id}
-                  className={`p-2 rounded-lg ${
-                      message.sender === 'user'
-                          ? 'bg-blue-100 self-end text-right'
-                          : 'bg-gray-200 self-start text-left'
-                  }`}
-              >
-                  {message.text}
-              </p>
-          ))}
 
-          {/* Render StreamComponent only for the active stream */}
-          {currentBotMessageId && (
-              <StreamComponent
-                  inputMsg={messages[messages.length - 2]?.text} // Send the latest user message
-                  csrftoken={csrftoken}
-                  onStreamUpdate={handleStreamUpdate} // Callback for stream updates
-              />
-          )}
+
+  return (
+    <div className="w-full h-full flex flex-col justify-end bg-white p-6 rounded-lg">
+      <div className="space-y-4 overflow-auto max-h-96">
+        {messages.map((message) => (
+          <p
+            key={message.id}
+            className={`p-2 rounded-lg ${
+              message.sender === 'user'
+                ? 'bg-blue-100 self-end text-right'
+                : 'bg-gray-200 self-start text-left'
+            }`}
+          >
+            {message.text}
+          </p>
+        ))}
+
+        {currentBotMessageId && (
+          <StreamComponent
+            inputMsg={messages[messages.length - 2]?.text}
+            csrftoken={csrftoken}
+            onStreamUpdate={handleStreamUpdate}
+          />
+        )}
+
+        {/* Add animation to ChatForm */}
+        
       </div>
 
-      <form onSubmit={sendMessage} className="flex space-x-4 mt-4">
-          <input
-              type="text"
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Type a message..."
-              className="flex-grow px-5 py-3 border rounded-lg focus:outline-none"
-          />
-          <button type="submit" className="send-btn">
-              Send
-          </button>
+      <form onSubmit={sendMessage} className={`flex space-x-4 mt-4 ${isChatFormSubmitted ? '' : 'hidden'}`}>
+        <input
+          type="text"
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          placeholder="Type a message..."
+          className="flex-grow px-5 py-3 border rounded-lg focus:outline-none"
+        />
+        <button type="submit" className="send-btn">
+          Send
+        </button>
       </form>
-  </div>
-);
+    </div>
+  );
 };
 
 export default ChatUI;
