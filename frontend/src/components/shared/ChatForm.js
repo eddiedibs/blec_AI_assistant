@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import axios from "axios";
 import { Datepicker, Spinner  } from "flowbite-react";
 import { CustomFlowbiteTheme } from "flowbite-react";
+import UseNotificationStore from "./UseNotificationStore";
 
 const ChatForm = ({ onSubmit }) => {
     const [options, setOptions] = useState([]);
@@ -13,6 +14,9 @@ const ChatForm = ({ onSubmit }) => {
     const [selectedAppointmentDate, setSelectedAppointmentDate] = useState(today);    
     const [selectedTime, setSelectedTime] = useState("");
     const [selectedOption, setSelectedOption] = useState("");
+    const { notifySuccess, notifyError } = UseNotificationStore();
+
+
     const [formData, setFormData] = useState({
         first_name: "",
         last_name: "",
@@ -84,6 +88,7 @@ const ChatForm = ({ onSubmit }) => {
       };
 
 
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -98,10 +103,10 @@ const ChatForm = ({ onSubmit }) => {
             onSubmit(response.data);
           }
     
-          alert("Appointment successfully created!");
+        //   alert("Appointment successfully created!");
+          notifyError("¡Tu cita ha sido registrada correctamente!")
         } catch (error) {
-          console.error("Error submitting form:", error);
-          alert("There was an error creating the appointment.");
+            notifyError("¡Oh no! Ha ocurrido un error al registrar tu cita")
         } finally {
           setLoading(false);
         }

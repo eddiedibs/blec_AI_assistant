@@ -55,7 +55,7 @@ class Patient(models.Model):
     birth_date = models.DateField(blank=True, null=True)
 
     def __str__(self):
-        return self.name
+        return self.first_name
     
 class Appointment(models.Model):
     STATUS_CHOICES = [
@@ -75,8 +75,8 @@ class Appointment(models.Model):
         super().save(*args, **kwargs)
 
     class Meta:
-        unique_together = ('doctor', 'appointment_date')  # Prevent overlapping appointments
+        # unique_together = ('doctor', 'appointment_date')  # Prevent overlapping appointments
         ordering = ['appointment_date']  # Default ordering
 
     def __str__(self):
-        return f"Appointment with {self.doctor.name} for {self.patient.name} on {self.appointment_date}"
+        return f"Appointment with {self.doctor.name} for {self.patient.first_name} on {self.appointment_date}"

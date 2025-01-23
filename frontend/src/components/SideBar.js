@@ -7,7 +7,7 @@ const SideBar = () => {
     return (
         <div className="top-0 left-0 h-screen w-16 m-0 flex-col bg-purple-900 text-white shadow-lg md:block hidden">
             <SideBarIcon icon={<BsPlus size="32"/>} text="Nuevo chat"/>
-            <SideBarIcon icon={<FaHandsHelping size="24"/>} text="Ayuda"/>
+            <SideBarIcon icon={<FaHandsHelping size="24"/>} text="Citas médicas"/>
             <SideBarIcon icon={<BsGearFill size="20"/>} text="Configuracion"/>
         </div>
     );

@@ -1,61 +1,60 @@
-import React, { useState } from 'react';
-import { fetchBlecAiData } from '../logic/sendRequest'; // Adjust the import path as needed
-import { motion } from 'framer-motion';
-import StreamComponent from '../components/StreamComponent';
-import ChatForm from '../components/shared/ChatForm';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import StreamComponent from "../components/StreamComponent";
+import ChatForm from "../components/shared/ChatForm";
 
 const ChatUI = () => {
   const [isChatFormSubmitted, setIsChatFormSubmitted] = useState(false);
-    // Animation variants
+  const [requestBody, setRequestBody] = useState(null); // Add state for request body
+
+  // Animation variants
   const formVariants = {
     hidden: { opacity: 0, y: 50 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
   };
+
   return (
-    <div className='w-full h-screen flex flex-col'>
+    <div className="w-full h-screen flex flex-col">
       <ChatTitleText />
-      <ChatActionButtons isChatFormSubmitted={isChatFormSubmitted} />
+      <ChatActionButtons
+        isChatFormSubmitted={isChatFormSubmitted}
+        requestBody={requestBody} // Pass request body to ChatActionButtons
+      />
       {!isChatFormSubmitted && (
-          <motion.div
+        <motion.div
           variants={formVariants}
           initial="hidden"
           animate="visible"
         >
-        <ChatForm onSubmit={() => setIsChatFormSubmitted(true)} />
-       </motion.div>
+          <ChatForm
+            onSubmit={(data) => {
+              const requestBodyString = JSON.stringify(data); // Convert the data to a string
+              setRequestBody(requestBodyString); // Set the submitted data as a string
+              setIsChatFormSubmitted(true); // Mark form as submitted
+            }}
+          />
+        </motion.div>
       )}
     </div>
   );
 };
 
 const ChatTitleText = () => (
-  <div className='w-full h-full flex flex-col items-center p-6 justify-center'>
-    <h2 className="text-xl font-montserrat text-center font-semibold mb-4">¡Hola! ¿Cómo puedo ayudarte? :)</h2>
-    <p className="text-xl font-montserrat text-center mb-4">Me llamo Liz, tu asistente virtual para agenda de citas con la Dr. Belinda. ¿Necesitas agendar?</p>
+  <div className="w-full h-full flex flex-col items-center p-6 justify-center">
+    <h2 className="text-xl font-montserrat text-center font-semibold mb-4">
+      ¡Hola! ¿Cómo puedo ayudarte? :)
+    </h2>
+    <p className="text-xl font-montserrat text-center mb-4">
+      Me llamo Liz, tu asistente virtual para agenda de citas con la Dr.
+      Belinda. ¿Necesitas agendar?
+    </p>
   </div>
 );
 
-const ChatActionButtons = ({ isChatFormSubmitted }) => {
+const ChatActionButtons = ({ isChatFormSubmitted, requestBody }) => {
   const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState('');
+  const [newMessage, setNewMessage] = useState("");
   const [currentBotMessageId, setCurrentBotMessageId] = useState(null);
-
-  const sendMessage = async (e) => {
-    e.preventDefault();
-
-    if (!newMessage.trim()) return;
-
-    const userMessage = { id: Date.now(), text: newMessage, sender: 'user' };
-    setMessages((prev) => [...prev, userMessage]);
-    setNewMessage('');
-
-    const botMessageId = Date.now() + 1;
-    setMessages((prev) => [
-      ...prev,
-      { id: botMessageId, text: '', sender: 'chatbot' },
-    ]);
-    setCurrentBotMessageId(botMessageId);
-  };
 
   const handleStreamUpdate = (partialResponse) => {
     setMessages((prev) =>
@@ -67,8 +66,6 @@ const ChatActionButtons = ({ isChatFormSubmitted }) => {
     );
   };
 
-
-
   return (
     <div className="w-full h-full flex flex-col justify-end bg-white p-6 rounded-lg">
       <div className="space-y-4 overflow-auto max-h-96">
@@ -76,28 +73,42 @@ const ChatActionButtons = ({ isChatFormSubmitted }) => {
           <p
             key={message.id}
             className={`p-2 rounded-lg ${
-              message.sender === 'user'
-                ? 'bg-blue-100 self-end text-right'
-                : 'bg-gray-200 self-start text-left'
+              message.sender === "user"
+                ? "bg-blue-100 self-end text-right"
+                : "bg-gray-200 self-start text-left"
             }`}
           >
             {message.text}
           </p>
         ))}
 
-        {currentBotMessageId && (
+        {isChatFormSubmitted && requestBody && (
           <StreamComponent
-            inputMsg={messages[messages.length - 2]?.text}
+            inputMsg={requestBody} // Pass the requestBody to StreamComponent
             csrftoken={csrftoken}
             onStreamUpdate={handleStreamUpdate}
           />
         )}
-
-        {/* Add animation to ChatForm */}
-        
       </div>
 
-      <form onSubmit={sendMessage} className={`flex space-x-4 mt-4 ${isChatFormSubmitted ? '' : 'hidden'}`}>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!newMessage.trim()) return;
+
+          const userMessage = { id: Date.now(), text: newMessage, sender: "user" };
+          setMessages((prev) => [...prev, userMessage]);
+          setNewMessage("");
+
+          const botMessageId = Date.now() + 1;
+          setMessages((prev) => [
+            ...prev,
+            { id: botMessageId, text: "", sender: "chatbot" },
+          ]);
+          setCurrentBotMessageId(botMessageId);
+        }}
+        className={`flex space-x-4 mt-4 ${isChatFormSubmitted ? "" : "hidden"}`}
+      >
         <input
           type="text"
           value={newMessage}
