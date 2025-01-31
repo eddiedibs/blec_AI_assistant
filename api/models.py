@@ -1,44 +1,37 @@
-# from django.db import models
-from django.contrib.auth.models import User
-from django.shortcuts import reverse
-from PIL import Image
-from uuid import uuid4
-
-from djongo import models
+import mongoengine as me
+import uuid
 from django.utils.timezone import now
+from django.conf import settings  # Import settings for user reference
+
+class AiRequests(me.Document):
+    user_id = me.IntField(required=True)  # Use IntegerField
+    request_instruction = me.StringField(max_length=400, required=True)
+
+    def __str__(self):
+        return f"Request: {self.request_instruction}"
 
 
-
-
-class AiRequests(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    request_instruction = models.TextField(max_length=400)
+class Conversation(me.Document):
+    meta = {'collection': 'conversation'}  # Explicit MongoDB collection name
     
+    user_id = me.IntField(required=True)  # User identifier
+    created_at = me.DateTimeField(default=now)
+    updated_at = me.DateTimeField(default=now)
+    conversation_id = me.StringField(max_length=255, unique=True, required=True)  # Unique conversation identifier
 
     def __str__(self):
-        return f"request: {self.request_instruction}"
+        return f"Conversation {self.conversation_id} with User ID {self.user_id}"
 
 
-class Conversation(models.Model):
-    user_id = models.UUIDField(primary_key=True, default=uuid4, editable=False)  # Unique ID for the user (e.g., user identifier)
-    created_at = models.DateTimeField(default=now)  # Timestamp of when the conversation started
-    updated_at = models.DateTimeField(auto_now=True)  # Timestamp of the last message
-    conversation_id = models.CharField(max_length=255, unique=True)  # Unique identifier for the conversation
+class Message(me.Document):
+    meta = {'collection': 'message'}  # Explicit MongoDB collection name
 
-    def __str__(self):
-        return f"Conversation {self.conversation_id} with User Of ID {self.user_id}"
+    ROLE_CHOICES = ('user', 'ai')  # MongoEngine enum equivalent
 
-
-class Message(models.Model):
-    ROLE_CHOICES = [
-        ('user', 'User'),
-        ('ai', 'AI'),
-    ]
-
-    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES)  # 'user' or 'ai'
-    content = models.TextField()  # The message text
-    timestamp = models.DateTimeField(default=now)  # When the message was sent
+    conversation = me.ReferenceField(Conversation, reverse_delete_rule=me.CASCADE, required=True)
+    role = me.StringField(choices=ROLE_CHOICES, required=True)  # 'user' or 'ai'
+    content = me.StringField(required=True)  # The message text
+    timestamp = me.DateTimeField(default=now)  # When the message was sent
 
     def __str__(self):
         return f"Message by {self.role} at {self.timestamp}"

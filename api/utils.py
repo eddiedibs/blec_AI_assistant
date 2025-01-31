@@ -17,24 +17,24 @@ def send_request_to_ollama(
         client = Client(host=f"{settings.OLLAMA_HOST}:{settings.OLLAMA_PORT}")
 
         # Retrieve the conversation history from MongoDB
-        conversation_history = Message.objects.filter(conversation=conversation).order_by("timestamp")
+        # conversation_history = Message.objects.filter(conversation=conversation).order_by("timestamp")
         msgs = []
         if content_instruct:
             # Prepare the messages for the Ollama API request
             msgs = [{"role": "system", "content": content_instruct}]
 
         # Append the conversation history to msgs
-        for message in conversation_history:
-            role_mapping = {"user": "user", "ai": "assistant"}  # Map roles to Ollama's expected roles
-            role = role_mapping.get(message.role)
+        # for message in conversation_history:
+        #     role_mapping = {"user": "user", "ai": "assistant"}  # Map roles to Ollama's expected roles
+        #     role = role_mapping.get(message.role)
 
-            if not role:
-                raise ValueError(f"Invalid role '{message.role}' in conversation history")
+        #     if not role:
+        #         raise ValueError(f"Invalid role '{message.role}' in conversation history")
 
-            msgs.append({
-                "role": role,
-                "content": message.content
-            })
+        #     msgs.append({
+        #         "role": role,
+        #         "content": message.content
+        #     })
 
         # Add the new user message to the conversation
         msgs.append({"role": "user", "content": request_data})
@@ -79,22 +79,22 @@ def send_request_to_ollama(
                 chunk_content = chunk['message']['content']
                 ai_message_content += chunk_content
 
-            # # Save the user message to MongoDB
-            # Message.objects.create(
-            #     conversation=conversation,
-            #     role='user',
-            #     content=request_data,
-            #     timestamp=now()
-            # )
+            # Save the user message to MongoDB
+            Message.objects.create(
+                conversation=conversation,
+                role='user',
+                content=request_data,
+                timestamp=now()
+            )
 
-            # # Save the full AI message to MongoDB
-            # if ai_message_content:
-            #     Message.objects.create(
-            #         conversation=conversation,
-            #         role='ai',
-            #         content=ai_message_content,
-            #         timestamp=now()
-            #     )
+            # Save the full AI message to MongoDB
+            if ai_message_content:
+                Message.objects.create(
+                    conversation=conversation,
+                    role='ai',
+                    content=ai_message_content,
+                    timestamp=now()
+                )
 
             # Return the full AI response as a string
             return ai_message_content

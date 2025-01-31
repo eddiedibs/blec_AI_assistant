@@ -15,6 +15,7 @@ const ChatForm = ({ onSubmit }) => {
     const [selectedTime, setSelectedTime] = useState("");
     const [selectedOption, setSelectedOption] = useState("");
     const { notifySuccess, notifyError } = UseNotificationStore();
+    const [csrfToken, setCsrfToken] = useState("");
 
 
     const [formData, setFormData] = useState({
@@ -87,15 +88,30 @@ const ChatForm = ({ onSubmit }) => {
         }));
       };
 
-
+      useEffect(() => {
+        axios.get("http://localhost:8082/api/csrf", { withCredentials: true })
+            .then(response => {
+                setCsrfToken(response.data.csrfToken);
+            })
+            .catch(error => console.error("Error fetching CSRF token:", error));
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+
         try {
           // Replace with your actual API endpoint
           console.log("formData:", formData);
-          const response = await axios.post("http://localhost:8082/api/appointments", formData);
+          const response = await axios.post("http://localhost:8082/api/appointments", formData,
+            {
+                headers: {
+                    "X-CSRFToken": csrfToken,  // Attach CSRF token in request headers
+                },
+                withCredentials: true,
+            }
+
+          );
           console.log("Response:", response.data);
     
           // Notify parent component

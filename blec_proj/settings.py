@@ -15,6 +15,23 @@ import os
 import environ
 import json
 
+from mongoengine import connect
+
+MONGO_DB_NAME = "blec_mongo_db"
+MONGO_HOST = "localhost"  # or your MongoDB host
+MONGO_PORT = 27017  # Default MongoDB port
+MONGO_USER = ""  # If authentication is required
+MONGO_PASSWORD = ""  # If authentication is required
+
+connect(
+    db=MONGO_DB_NAME,
+    host=MONGO_HOST,
+    port=MONGO_PORT,
+    username=MONGO_USER,  # Remove if no authentication
+    password=MONGO_PASSWORD,  # Remove if no authentication
+    authentication_source="admin"  # Specify if required
+)
+
 # Initialise environment variables
 env = environ.Env()
 environ.Env.read_env()
@@ -40,32 +57,34 @@ OLLAMA_INIT_INSTRUCT = os.getenv('OLLAMA_INIT_INSTRUCT')
 if DEBUG:
 
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': 'blec_proj_db',
-            'USER' : 'postgres',
-            'PASSWORD' : '123456',
-            'HOST' : 'localhost',
-            'PORT' : '5432',
-            },
-        'mongodb': {
-            'ENGINE': 'djongo',
-            'NAME': 'blec_mongo_db',
-            'HOST': 'localhost',
-            'PORT': 27017,
-            'USER': '',
-            'PASSWORD': '',
-            'AUTH_SOURCE': 'admin',
-            'AUTH_MECHANISM': 'SCRAM-SHA-1',
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'blec_proj_db',
+        'USER': 'postgres',
+        'PASSWORD': '123456',
+        'HOST': 'localhost',
+        'PORT': '5432',
+        'OPTIONS': {
+            'options': '-c timezone=UTC'
+        },
     }
-        }
+    }
     # ALLOWED_HOSTS = json.loads(os.environ['ALLOWED_HOST'])
     ALLOWED_HOSTS = ["127.0.0.1", "localhost", "192.168.1.105", "172.23.108.251"]
     CSRF_TRUSTED_ORIGINS= json.loads(os.environ['CSRF_TRUSTED_ORIGINS'])
 
 
-DATABASE_ROUTERS = ['api.database_router.MongoRouter']
+# Ensure cookies can be sent cross-origin
+CORS_ALLOW_CREDENTIALS = True
 
+DATABASE_ROUTERS = ['api.database_router.MongoRouter']
+CSRF_COOKIE_NAME = "csrftoken"
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+}
 
 # Application definition
 
@@ -85,7 +104,12 @@ INSTALLED_APPS = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
+    "http://localhost:8082",
+    "http://127.0.0.1:8082",
 ]
+
+
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

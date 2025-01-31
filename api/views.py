@@ -25,44 +25,80 @@ from .models import Conversation, Message, AiRequests
 from users.models import Doctor, Patient, Appointment
 
 
+from django.middleware.csrf import get_token
+import json
+
+
+def get_csrf_token(request):
+    return JsonResponse({'csrfToken': get_token(request)})
+
+def validate_and_convert_data (data):
+    try:
+        parsed_data = json.loads(data)  # Convert string to dictionary
+
+        # Accessing values
+        message = parsed_data.get("message")
+        patient = parsed_data.get("patient", {})
+        appointment = parsed_data.get("appointment", {})
+
+        # Extract specific details
+        patient_name = patient.get("name")
+        patient_email = patient.get("email")
+        patient_birth_date = patient.get("birth_date")
+        appointment_date = appointment.get("date")
+        appointment_doctor = appointment.get("doctor")
+        appointment_reason = appointment.get("reason")
+
+        return {"message":message,
+                "patient_name":patient_name,
+                "patient_email":patient_email,
+                "patient_birth_date":patient_birth_date,
+                "appointment_doctor":appointment_doctor,
+                "appointment_date":appointment_date,
+                "appointment_reason":appointment_reason,
+                }
+
+    except json.JSONDecodeError as e:
+        print(f"Error decoding JSON: {e}")
+
 class AiRequestView(APIView):
     serializer_class = AiRequestSerializer
 
     def post(self, request, format=None):
-        if not self.request.session.exists(self.request.session.session_key):
-            self.request.session.create()
+        # if not self.request.session.exists(self.request.session.session_key):
+        #     self.request.session.create()
 
 
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            request_instruction = serializer.data.get("request_instruction")
-            # user_id = serializer.data.get("user")  # Assuming 'user' is passed in the payload
-            
-            # user = serializer.data.get("user")
-            # retrieved_user = User.objects.filter(id=user).first()
-            # Retrieve or create the user
-            user = User.objects.all().first()
-            if not user:
-                return Response({'Bad Request': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        request_instruction_json = request.data.get("request_instruction")
 
-            # Create or retrieve a conversation
-            conversation, created = Conversation.objects.get_or_create(
+        if request_instruction_json:
+            converted_data = validate_and_convert_data(request_instruction_json)
+
+        request_instruction = f"Responde que notificarás al doctor de nombre: {converted_data['appointment_doctor']}, de su disponibilidad para la fecha: {converted_data['appointment_date']}, para la agenda de cita de l paciente de nombre: {converted_data['patient_name']}, por la razón de: {converted_data['appointment_reason']}. Comenta finalmente que una vez se coordine la cita, recibirás un mensaje mediante correo electrónico."
+
+        # user_id = serializer.data.get("user")  # Assuming 'user' is passed in the payload
+        
+        # user = serializer.data.get("user")
+        # retrieved_user = User.objects.filter(id=user).first()
+        # Retrieve or create the user
+        user = User.objects.all().first()
+        if not user:
+            return Response({'Bad Request': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Create or retrieve a conversation
+        conversation = Conversation.objects(user_id=user.id).first()
+
+        # If not found, create a new one
+        if not conversation:
+            conversation = Conversation(
                 user_id=user.id,
-                defaults={'conversation_id': str(uuid4()), 'created_at': now()}
+                conversation_id=str(uuid4()),  # Generate unique ID
+                created_at=now()
             )
+            conversation.save()  # Save to MongoDB
 
-            # data_obj = send_request_to_ollama(
-            #     request_data="If and ONLY IF we had a previous conversation related to doctor appointment data. Return that data with a json object containing the following structure with no other comments: {'doctor':'doctorName','patient':'patientName', 'patienIdNumber':'patientIdNumber','patientPhoneNumber':'patientPhoneNumber'}.", 
-            #     conversation=conversation, 
-            #     return_stream=False,  
-            #     )
-
-            # # Send request to Ollama and stream the response
-            # print(data_obj)
-            return send_request_to_ollama(request_data=request_instruction, conversation=conversation, content_instruct=settings.OLLAMA_INIT_INSTRUCT)
-            # return Response(AiRequestSerializer(ai_request).data, status=status.HTTP_201_CREATED)
-        else:
-            return Response({'Bad Request': 'Something went wrong...'}, status=status.HTTP_400_BAD_REQUEST)
+        return send_request_to_ollama(request_data=request_instruction, content_instruct=settings.OLLAMA_INIT_INSTRUCT, conversation=conversation)
+        # return Response(AiRequestSerializer(ai_request).data, status=status.HTTP_201_CREATED)
 
 
 
@@ -124,6 +160,7 @@ class AiRequestAppointmentView(APIView):
                         "id": patient.id,
                         "name": f"{patient.first_name} {patient.last_name}",
                         "email": patient.email,
+                        "birth_date": patient.birth_date,
                     },
                     "appointment": {
                         "id": appointment.id,
