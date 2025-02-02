@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import AiRequests
 from users.models import Doctor, Patient
 from django.utils.timezone import now
+from phonenumber_field.serializerfields import PhoneNumberField
 
 class AiRequestSerializer(serializers.ModelSerializer):
 
@@ -23,9 +24,10 @@ class PatientModelSerializer(serializers.ModelSerializer):
         fields = ['id', 'first_name', 'last_name', 'id_number', 'email', 'date_of_birth']
 
 class AppointmentSerializer(serializers.Serializer):
-    first_name = serializers.CharField(max_length=100, trim_whitespace=True)
-    last_name = serializers.CharField(max_length=100, trim_whitespace=True)
+    patient_name = serializers.CharField(max_length=100, trim_whitespace=True)
+    parent_name = serializers.CharField(max_length=100, trim_whitespace=True)
     id_number = serializers.CharField(max_length=20)
+    phone_number = PhoneNumberField(region="VE")  # Adjust region as needed
     email = serializers.EmailField()
     birth_date = serializers.DateTimeField()
     appointment_date = serializers.DateTimeField()

@@ -1,11 +1,22 @@
-import sys
 import os
 import json
+import base64
+from datetime import datetime, timezone
+
+from jinja2 import Environment, FileSystemLoader, TemplateNotFound, TemplateError
 from ollama import Client
 from django.http import StreamingHttpResponse
 from django.conf import settings
 from .models import Message, Conversation  # Ensure to import your MongoDB models
 from django.utils.timezone import now
+from io import BytesIO
+import pycurl
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from django.conf import settings
+
+
+
 
 def send_request_to_ollama(
     request_data, 
@@ -103,4 +114,101 @@ def send_request_to_ollama(
         return str(ve)  # Handle specific validation errors
     except Exception as exp:
         return str(exp)  # Handle general exceptions
+
+
+
+
+
+
+
+def get_gmail_response(data, token_url):
+    buffer = BytesIO()
+    curl = pycurl.Curl()
+    post_data = json.dumps(data)
+    curl.setopt(curl.URL, token_url)
+    curl.setopt(curl.POST, 1)
+    curl.setopt(curl.POSTFIELDS, post_data)
+    curl.setopt(curl.WRITEFUNCTION, buffer.write)
+
+    if not data["access_token"]:
+        curl.setopt(curl.HTTPHEADER, ["Content-Type: application/json"])
+
+        curl.perform()
+        curl.close()
+
+        response = json.loads(buffer.getvalue().decode())
+
+        if "access_token" in response:
+            return response["access_token"]
+        else:
+            print(f"Error getting access token: {response}")
+            return None
+
+    else:
+        curl.setopt(curl.HTTPHEADER, ["Content-Type: application/json", "Accept: application/json"])
+
+        curl.perform()
+        curl.close()
+
+        response = json.loads(buffer.getvalue().decode())
+
+        if "labelIds" in response:
+            return response["labelIds"][0]
+        else:
+            print(f"Error getting access token: {response}")
+            return None
+
+
+def send_email(from_email, to_emails, subject, context, email_template):
+    access_token = get_gmail_response({
+        "client_id": settings.CLIENT_ID,
+        "client_secret": settings.CLIENT_SECRET,
+        "refresh_token": settings.REFRESH_TOKEN,
+        "grant_type": "refresh_token",
+        "access_token": None,
+        "redirect_uri": "https://developers.google.com/oauthplayground"
+    }, settings.TOKEN_URL)
+
+
+
+    # Render the email content using Jinja2 (as shown earlier)
+    env = Environment(loader=FileSystemLoader("templates"))
+    try:
+        template = env.get_template(email_template)
+    except TemplateNotFound:
+        print("Error: Email template not found.")
+        return
+
+    try:
+        html_content = template.render(**context)
+    except TemplateError as e:
+        print(f"TemplateError: {e}")
+        return
+
+    # Construct the email message
+    msg = MIMEMultipart()
+    msg["From"] = from_email
+    if isinstance(to_emails, list):  # Check if it's a list
+        msg["To"] = ", ".join(to_emails)  
+    else:
+        msg["To"] = to_emails  
+    msg["Subject"] = subject
+    msg.attach(MIMEText(html_content, "html"))
+
+    # Encode the email in base64 for Gmail API
+    raw_message = base64.urlsafe_b64encode(msg.as_bytes()).decode()
+
+    # Send the email using the Gmail API
+    try:
+        response = get_gmail_response({ "access_token":access_token,"raw": raw_message}, f"https://gmail.googleapis.com/gmail/v1/users/me/messages/send?access_token={access_token}")
+        if response == "SENT":        
+            print(f"Email sent successfully!")
+    except Exception as e:
+        print(f"Error sending email: {e}")
+
+
+
+
+
+
 

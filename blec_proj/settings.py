@@ -16,6 +16,7 @@ import environ
 import json
 
 from mongoengine import connect
+from easy_thumbnails.conf import Settings as thumbnail_settings
 
 MONGO_DB_NAME = "blec_mongo_db"
 MONGO_HOST = "localhost"  # or your MongoDB host
@@ -76,6 +77,16 @@ if DEBUG:
 
 # Ensure cookies can be sent cross-origin
 CORS_ALLOW_CREDENTIALS = True
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+
+
+CREDENTIALS = os.path.join(os.getcwd(), "credentials.json")
+TOKEN_FILE = os.path.join(os.getcwd(), "token.json")
+SERVICE_ACCOUNT_FILE = os.path.join(os.getcwd(), "blec_api_service_account.json")
+FOLDER_ID = os.getenv('FOLDER_ID')
 
 DATABASE_ROUTERS = ['api.database_router.MongoRouter']
 CSRF_COOKIE_NAME = "csrftoken"
@@ -99,8 +110,16 @@ INSTALLED_APPS = [
     'api.apps.ApiConfig',
     'users.apps.UsersConfig',
     'frontend.apps.FrontendConfig',
-   'corsheaders',
+    'corsheaders',
+    'image_cropping',
+    'easy_thumbnails',
+    'phonenumber_field',
 ]
+
+
+THUMBNAIL_PROCESSORS = (
+    'image_cropping.thumbnail_processors.crop_corners',
+) + thumbnail_settings.THUMBNAIL_PROCESSORS
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
@@ -177,7 +196,10 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+# LANGUAGE_CODE = 'en-us'
+
+LANGUAGE_CODE = 'es'  # Set Spanish as the default language
+# TIME_ZONE = 'America/Caracas'  # Adjust to your local timezone
 
 TIME_ZONE = 'UTC'
 
@@ -198,3 +220,12 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# OAUTH CREDENTIALS
+
+CLIENT_ID = os.getenv("CLIENT_ID")
+CLIENT_SECRET = os.getenv("CLIENT_SECRET") 
+TOKEN_URL = os.getenv("TOKEN_URL") 
+REFRESH_TOKEN = os.getenv("REFRESH_TOKEN") 
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER") 

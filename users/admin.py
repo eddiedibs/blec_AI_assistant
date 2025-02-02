@@ -1,15 +1,22 @@
 from django.contrib import admin
-from users.models import Doctor, Patient, Appointment
+from users.models import Doctor, Patient, Appointment, PatientParent
+from image_cropping import ImageCroppingMixin
 
 @admin.register(Doctor)
-class DoctorAdmin(admin.ModelAdmin):
+class DoctorAdmin(ImageCroppingMixin, admin.ModelAdmin):
+    exclude = ('drive_url',)
     list_display = ['name', 'specialization', 'contact', 'email']
     search_fields = ['name', 'specialization']
 
 @admin.register(Patient)
 class PatientAdmin(admin.ModelAdmin):
-    list_display = ['first_name', 'last_name','email']
-    search_fields = ['first_name']
+    list_display = ['name', 'age']
+    search_fields = ['name']
+
+@admin.register(PatientParent)
+class PatientParentAdmin(admin.ModelAdmin):
+    list_display = ['name', 'id_number', 'contact_phone_number', 'email']
+    search_fields = ['name']
 
 @admin.register(Appointment)
 class AppointmentAdmin(admin.ModelAdmin):

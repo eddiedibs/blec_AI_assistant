@@ -8,3 +8,5 @@ __pycache__/
 node_modules/
 frontend/static/main.js
 wschatbot/
+blec_api_service_account.json
+credentials.json

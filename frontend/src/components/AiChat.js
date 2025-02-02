@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import StreamComponent from "../components/StreamComponent";
 import ChatForm from "../components/shared/ChatForm";
 import axios from "axios";
+import { Spinner  } from "flowbite-react";
 
 const ChatUI = () => {
   const [isChatFormSubmitted, setIsChatFormSubmitted] = useState(false);
@@ -70,16 +71,21 @@ const ChatActionButtons = ({ isChatFormSubmitted, requestBody }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [currentBotMessageId, setCurrentBotMessageId] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleStreamUpdate = (partialResponse) => {
-
+  
     setMessages((prev) =>
-      prev.map((message) =>
-        message.sender === "chatbot"
-          ? { ...message, text: message.text + partialResponse }
-          : message
-      )
+      prev.map((message) => {
+        if (message.sender === "chatbot") {
+          return { ...message, text: message.text + partialResponse };
+        }
+        return message;
+      })
     );
+  
+    setIsLoading(false);
+
   };
 
   const handleFormSubmit = (message) => {
@@ -95,7 +101,7 @@ const ChatActionButtons = ({ isChatFormSubmitted, requestBody }) => {
       { id: botMessageId, text: "", sender: "chatbot" },
     ]);
     setCurrentBotMessageId(botMessageId);
-    console.log(currentBotMessageId);
+    setIsLoading(true);
   };
 
   // Trigger form submission when requestBody contains a value
@@ -108,6 +114,12 @@ const ChatActionButtons = ({ isChatFormSubmitted, requestBody }) => {
 
   return (
     <div className="w-full h-full flex flex-col justify-end bg-white p-6 rounded-lg">
+      {isLoading && (
+          <div className="flex justify-center items-center">
+            <Spinner aria-label="Loading spinner" />
+            <span className="ml-2">Loading...</span>
+          </div>
+        )}
       <div className="space-y-4 overflow-auto max-h-96">
       {messages
       .filter((message) => message.sender === "chatbot")
@@ -127,6 +139,7 @@ const ChatActionButtons = ({ isChatFormSubmitted, requestBody }) => {
             onStreamUpdate={handleStreamUpdate}
           />
         )} */}
+
         {isChatFormSubmitted && requestBody &&(
           <StreamComponent
             inputMsg={requestBody}

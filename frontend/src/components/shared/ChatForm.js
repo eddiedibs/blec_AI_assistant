@@ -16,12 +16,14 @@ const ChatForm = ({ onSubmit }) => {
     const [selectedOption, setSelectedOption] = useState("");
     const { notifySuccess, notifyError } = UseNotificationStore();
     const [csrfToken, setCsrfToken] = useState("");
+    const [phoneNumber, setPhoneNumber] = useState("");
 
 
     const [formData, setFormData] = useState({
-        first_name: "",
-        last_name: "",
+        patient_name: "",
+        parent_name: "",
         id_number: "",
+        phone_number: "",
         email: "",
         birth_date: new Date(),
         appointment_date: new Date(),
@@ -64,6 +66,19 @@ const ChatForm = ({ onSubmit }) => {
         setSelectedAppointmentDate(date);
         updateFormData(date, selectedTime);
       };
+    const handlePhoneNumberChange = (e) => {
+        const input = e.target.value;
+        setPhoneNumber(input);
+    
+        // Regex pattern for phone number validation (international format)
+        const phoneRegex = /^\+?58?\d{9,15}$/;
+    
+        if (!phoneRegex.test(input)) {
+            notifyError("Número de teléfono inválido. Usa el formato +584244857981");
+        } else {
+          setError("");
+        }
+      };
 
     const handleTimeChange = (event) => {
         // Update only the time part
@@ -101,6 +116,12 @@ const ChatForm = ({ onSubmit }) => {
         setLoading(true);
 
         try {
+            const phoneRegex = /^\+?58?\d{9,15}$/;
+        
+            if (!phoneRegex.test(formData.phone_number)) {
+                notifyError("Número de teléfono inválido. Usa el formato +584244857981");
+                return;
+            } 
           // Replace with your actual API endpoint
           console.log("formData:", formData);
           const response = await axios.post("http://localhost:8082/api/appointments", formData,
@@ -120,7 +141,7 @@ const ChatForm = ({ onSubmit }) => {
           }
     
         //   alert("Appointment successfully created!");
-          notifyError("¡Tu cita ha sido registrada correctamente!")
+        notifySuccess("¡Tu cita ha sido registrada correctamente!")
         } catch (error) {
             notifyError("¡Oh no! Ha ocurrido un error al registrar tu cita")
         } finally {
@@ -216,26 +237,47 @@ return (
     <form onSubmit={handleSubmit}>
         <div class="grid gap-6 mb-2 md:grid-cols-2">
             <div>
-                <label for="first_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nombre</label>
-                <input onChange={handleChange}  type="text" id="first_name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Coloca tu nombre" required />
+                <label for="patient_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nombre y apellido del paciente</label>
+                <input onChange={handleChange}  type="text" id="patient_name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Coloca tu nombre" required />
             </div>
             <div>
-                <label for="last_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Apellido</label>
-                <input onChange={handleChange}  type="text" id="last_name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Coloca tu apellido" required />
+                <label for="parent_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nombre y apellido del representante</label>
+                <input onChange={handleChange}  type="text" id="parent_name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Coloca tu apellido" required />
             </div>
         </div>
         <div class="grid gap-6 mb-2 md:grid-cols-2">
             <div class="mb-2">
-                <label for="id_number" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Cédula de identidad</label>
-                <input onChange={handleChange}  type="id_number" id="id_number" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="eg. 11254879" required />
-            </div> 
-            <div class="mb-2">
-                <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Correo electrónico</label>
+                <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Correo electrónico de contacto</label>
                 <input onChange={handleChange}  type="email" id="email" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="eg. ejemplo@gmail.com" required />
-            </div> 
+            </div>
+            <div class="mb-2">
+                <label for="phone_number" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Número telefónico de contacto</label>
+                <input onChange={handleChange}  type="phone_number" id="phone_number" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="eg. +584244857981" required />
+            </div>
+            <div class="mb-2">
+                <label for="id_number" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Cédula de identidad del representante</label>
+                <input onChange={handleChange}  type="id_number" id="id_number" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="eg. 11254879" required />
+            </div>  
             <div>
-                <label for="birth_date" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Fecha de nacimiento</label>
+                <label for="birth_date" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Fecha de nacimiento del paciente</label>
                 <Datepicker theme={customTheme} id="birth_date" value={selectedBirthDate} onChange={handleBirthDateChange}/>
+            </div>
+                
+        </div>
+        <div class="grid gap-6 mb-2 md:grid-cols-2">
+            <div class="mb-2">
+                <label for="doctor" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Doctor a agendar</label>
+                <select value={selectedOption} onChange={handleSelectChange} id='doctor' class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                    <option value="" disabled>
+                        Selecciona un doctor
+                    </option>
+                    {options.map((option) => (
+                        <option key={option.value} value={option.value}>
+                        {option.name}
+                        </option>
+                    ))}
+                </select>
+                {/* <input onChange={handleChange}  type="doctor" id="doctor" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="eg. 042412345678" required /> */}
             </div>
             <div>
                 <label for="appointment_date" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Fecha deseada para cita</label>
@@ -251,27 +293,12 @@ return (
                     </div>
                 </div>
             </div>
-                
         </div>
-        
-        <div class="mb-2">
-            <label for="doctor" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Doctor a agendar</label>
-            <select value={selectedOption} onChange={handleSelectChange} id='doctor' class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-                <option value="" disabled>
-                    Selecciona un doctor
-                </option>
-                {options.map((option) => (
-                    <option key={option.value} value={option.value}>
-                    {option.name}
-                    </option>
-                ))}
-            </select>
-            {/* <input onChange={handleChange}  type="doctor" id="doctor" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="eg. 042412345678" required /> */}
-        </div>
+
         
         <div class="mb-2">
             <label for="appointment_reason" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Razón de la cita</label>
-            <input onChange={handleChange}  type="appointment_reason" id="appointment_reason" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="eg. Malestar general" required />
+            <textarea onChange={handleChange}  type="appointment_reason" id="appointment_reason" class="min-h-[100px] max-h-[280px] overflow-y-auto bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="eg. Malestar general" required />
         </div> 
         {/* <div class="flex items-start mb-2">
             <div class="flex items-center h-5">
