@@ -11,7 +11,7 @@
 
         @apply relative flex items-center justify-center
                 h-12 w-12 mt-2 mb-2 mx-auto shadow-lg
-                bg-purple-800 text-white
+                bg-[#ff96d8] text-white
                 hover:bg-magenta hover:text-white
                 rounded-3xl hover:rounded-xl transition-all duration-200
                 ease-linear cursor-pointer;

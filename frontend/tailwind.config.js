@@ -30,13 +30,17 @@ module.exports = {
         montserrat: ['Montserrat', 'sans-serif'], // Replace 'YourFontName' with the actual name of your font
       },
       colors: {
-        primary: '#B571FF',
-        secondary: '#FF96D8',
+        primary: '#9d2a92',
+        secondary: '#3fae48',
         purple: colors.truePurple,
         purple: {
-          900: '#B571FF',
+          900: '#9d2a92',
         },
-        magenta: '#FF96D8'
+        magenta: '#FF96D8',
+        greenKid: {
+          500: '#39a142',
+          900: '#3fae48',
+        }
       }
     },
   },
