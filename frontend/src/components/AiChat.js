@@ -31,7 +31,7 @@ const ChatUI = () => {
   }, []);
 
   return (
-    <div className="w-full h-screen flex flex-col">
+    <div className="w-full h-screen flex flex-col mt-[80px]">
       <ChatTitleText />
       <ChatActionButtons
         isChatFormSubmitted={isChatFormSubmitted}
