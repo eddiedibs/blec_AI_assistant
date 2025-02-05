@@ -23,7 +23,7 @@ const ChatForm = ({ onSubmit }) => {
         patient_name: "",
         parent_name: "",
         id_number: "",
-        phone_number: "",
+        phone_number: "+58",
         email: "",
         birth_date: new Date(),
         appointment_date: new Date(),
@@ -31,6 +31,19 @@ const ChatForm = ({ onSubmit }) => {
         doctor: "",
         appointment_reason: "",
       });
+    const [errors, setErrors] = useState({
+        patient_name: false,
+        parent_name: false,
+        id_number: false,
+        phone_number: false,
+        email: false,
+        birth_date: false,
+        appointment_date: false,
+        // appointment_time: false,
+        doctor: false,
+        appointment_reason: false,
+    });
+
       const [loading, setLoading] = useState(false);
     // Fetch options from Django API on component mount
     useEffect(() => {
@@ -51,7 +64,20 @@ const ChatForm = ({ onSubmit }) => {
         const { id, value } = event.target;
         // setSelectedOption(value);
         setFormData((prev) => ({ ...prev, [id]: value }));
+
+        setErrors((prev) => ({
+            ...prev,
+            [id]: value.trim() === "" || 
+                (id === "email" && !validateField(value, /^[^\s@]+@[^\s@]+\.[^\s@]+$/)) ||
+                (id === "phone_number" && !validateField(value, /^(0?(412|414|416|424|426))\d{7}$/)) ||
+                (id === "id_number" && !validateField(value, /^\d+$/))
+        }));
     };
+
+    const validateField = (value, regex) => {
+        return regex.test(value);
+    };
+
     const handleSelectChange = (event) => {
         const { id, value } = event.target;
         setSelectedOption(value);
@@ -65,19 +91,6 @@ const ChatForm = ({ onSubmit }) => {
         // Update only the date part
         setSelectedAppointmentDate(date);
         updateFormData(date, selectedTime);
-      };
-    const handlePhoneNumberChange = (e) => {
-        const input = e.target.value;
-        setPhoneNumber(input);
-    
-        // Regex pattern for phone number validation (international format)
-        const phoneRegex = /^\+?58?\d{9,15}$/;
-    
-        if (!phoneRegex.test(input)) {
-            notifyError("Número de teléfono inválido. Usa el formato +584244857981");
-        } else {
-          setError("");
-        }
       };
 
     const handleTimeChange = (event) => {
@@ -116,13 +129,11 @@ const ChatForm = ({ onSubmit }) => {
         setLoading(true);
 
         try {
-            const phoneRegex = /^\+?58?\d{9,15}$/;
-        
-            if (!phoneRegex.test(formData.phone_number)) {
-                notifyError("Número de teléfono inválido. Usa el formato +584244857981");
-                return;
-            } 
-          // Replace with your actual API endpoint
+
+            if (!Object.values(errors).every(value => value === false)) {
+                notifyError("¡Oh no! Existen campos en el formulario que debes revisar");
+                return;           
+            }
           console.log("formData:", formData);
           const response = await axios.post("http://localhost:8082/api/appointments", formData,
             {
@@ -239,24 +250,29 @@ return (
             <div>
                 <label for="patient_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nombre y apellido del paciente</label>
                 <input onChange={handleChange}  type="text" id="patient_name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Coloca tu nombre" required />
+                {errors.patient_name && <p className="text-red-500 text-xs mt-1">Este campo es obligatorio</p>}
             </div>
             <div>
                 <label for="parent_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nombre y apellido del representante</label>
                 <input onChange={handleChange}  type="text" id="parent_name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Coloca tu apellido" required />
+                {errors.parent_name && <p className="text-red-500 text-xs mt-1">Este campo es obligatorio</p>}
             </div>
         </div>
         <div class="grid gap-6 mb-2 md:grid-cols-2">
             <div class="mb-2">
                 <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Correo electrónico de contacto</label>
                 <input onChange={handleChange}  type="email" id="email" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="eg. ejemplo@gmail.com" required />
+                {errors.email && <p className="text-red-500 text-xs mt-1">Ingrese un correo válido</p>}
             </div>
             <div class="mb-2">
                 <label for="phone_number" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Número telefónico de contacto</label>
-                <input onChange={handleChange}  type="phone_number" id="phone_number" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="eg. +584244857981" required />
+                <input onChange={handleChange}  type="phone_number" id="phone_number" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="eg. 04244857981" required />
+                {errors.phone_number && <p className="text-red-500 text-xs mt-1">Ingrese un número telefónico válido (ejemplo: 04242837462)</p>}
             </div>
             <div class="mb-2">
                 <label for="id_number" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Cédula de identidad del representante</label>
                 <input onChange={handleChange}  type="id_number" id="id_number" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="eg. 11254879" required />
+                {errors.id_number && <p className="text-red-500 text-xs mt-1">Ingrese una cédula válida</p>}
             </div>  
             <div>
                 <label for="birth_date" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Fecha de nacimiento del paciente</label>

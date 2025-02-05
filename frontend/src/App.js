@@ -2,7 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SideBar from './components/SideBar';
 import ChatUI from './components/AiChat';
-import HomePage from './components/HomePage'; // New HomePage component
+import HomePage from './components/HomePage/HomePage'; // New HomePage component
 import { ToastContainer, Bounce } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 

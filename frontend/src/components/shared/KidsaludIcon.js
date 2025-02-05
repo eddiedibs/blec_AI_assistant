@@ -1,3 +1,6 @@
+import React from 'react';
+
+
 const KidsaludIcon = ({ width = "24", height = "24", ...props }) => {
     return (
       <svg
