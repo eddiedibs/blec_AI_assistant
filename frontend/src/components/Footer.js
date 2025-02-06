@@ -18,8 +18,8 @@ const Footer = () => {
             <h4 className="font-semibold text-lg mb-2">Enlaces</h4>
             <ul className="text-sm space-y-2">
               <li><a href="/" className="hover:text-[#3fae48]">Inicio</a></li>
-              <li><a href="/#about" className="hover:text-[#3fae48]">Acerca de</a></li>
-              <li><a href="/#services" className="hover:text-[#3fae48]">Servicios</a></li>
+              {/* <li><a href="/#about" className="hover:text-[#3fae48]">Acerca de</a></li>
+              <li><a href="/#services" className="hover:text-[#3fae48]">Servicios</a></li> */}
               <li><a href="/chat" className="hover:text-[#3fae48]">Agenda tu cita</a></li>
             </ul>
           </div>
