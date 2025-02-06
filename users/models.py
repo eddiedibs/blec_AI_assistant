@@ -187,6 +187,7 @@ class Appointment(models.Model):
     class Meta:
         verbose_name = "Cita médica"  # Singular name
         verbose_name_plural = "Citas médicas"  # Plural name
+        ordering = ['appointment_date']  # Default ordering
 
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name='appointments', verbose_name="Doctor")
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='appointments', verbose_name="Paciente")
@@ -205,11 +206,11 @@ class Appointment(models.Model):
 
         # Send email only if the status has changed to "Agendada"
         if (is_new_instance or previous_status != self.status) and self.status == "Agendada":
-            send_scheduled_email(self)
+            send_scheduled_email(self, "📅 ¡Tu cita médica ha sido agendada! ✅😊", "scheduled_email_template.html")
 
-    class Meta:
-        # unique_together = ('doctor', 'appointment_date')  # Prevent overlapping appointments
-        ordering = ['appointment_date']  # Default ordering
+        elif (is_new_instance or previous_status != self.status) and self.status == "Cancelada":
+            send_scheduled_email(self, "📅 Lo sentimos... Tu cita no ha podido ser agendada 😢", "canceled_email_template.html")
+
 
     def __str__(self):
         return f"Appointment with {self.doctor.name} for {self.patient.name} on {self.appointment_date}"
@@ -244,7 +245,7 @@ class Appointment(models.Model):
         # Return formatted date string
         return f"{day} de {month} del {year} a las {hour}:{minute_str}{am_pm}"
 
-def send_scheduled_email(appointment):
+def send_scheduled_email(appointment, subject, template):
     """Helper function to send email when an appointment is scheduled."""
     patient = appointment.patient
     parent = appointment.patient.parent
@@ -281,4 +282,4 @@ def send_scheduled_email(appointment):
 
     to_emails = [parent.email, doctor.email, retrieved_user.email]
 
-    send_email(settings.EMAIL_HOST_USER, to_emails,"📅 ¡Tu cita médica ha sido agendada! ✅😊",email_body, "scheduled_email_template.html")
+    send_email(settings.EMAIL_HOST_USER, to_emails,subject,email_body, template)
