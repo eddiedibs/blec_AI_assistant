@@ -13,6 +13,7 @@ from google.oauth2 import service_account
 from googleapiclient.http import MediaFileUpload  # Import this!
 from django.conf import settings
 from phonenumber_field.modelfields import PhoneNumberField
+from django.contrib.auth.models import AbstractUser
 
 from api.utils import send_email
 
@@ -33,8 +34,22 @@ def clean(self):
 
 # Create your models here.
 
+
+class CustomUser(AbstractUser):
+    is_doctor = models.BooleanField(default=False, verbose_name="Es doctor")
+
+    class Meta:
+        verbose_name = "Usuario"
+        verbose_name_plural = "Usuarios"
+        # app_label = "auth"  # 👈 This makes it appear under "Autenticación y autorización"
+
+
+    def __str__(self):
+        return self.username
+
+
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
     img = models.ImageField(default='default.png', upload_to='profile_pics')
 
 
@@ -92,23 +107,31 @@ def upload_to_drive(file_path, filename):
     return f"https://drive.google.com/uc?id={file_id}"
 
 class Doctor(models.Model):
+    DOCTOR_SPECIALTY_CHOICES = [
+        ('Pediatría', 'Pediatría'),
+        ]
     GENDER_CHOICES = [
         ('DR.', 'DR.'),
         ('DRA.', 'DRA.'),
     ]
     name = models.CharField(max_length=100,verbose_name="Nombre y apellido")
     gender = models.CharField(max_length=5, choices=GENDER_CHOICES, default="", verbose_name="Género")
-    specialization = models.CharField(max_length=100, default="",verbose_name="Especialidad")  # e.g., "Cardiologist", "Dermatologist"
+    specialization = models.CharField(max_length=100, choices=DOCTOR_SPECIALTY_CHOICES, default="",verbose_name="Especialidad")  # e.g.,
     description = models.TextField(max_length=380, default="",verbose_name="Descripción")  # e.g., "Recognized by his expertise.. etc"
     contact = models.CharField(max_length=15, blank=True, null=True, verbose_name="Número telefónico")
     email = models.EmailField(blank=True, null=True,verbose_name="Correo electrónico")
     profile_picture = models.ImageField(upload_to='doctor_profiles/', blank=True, null=True,verbose_name="Foto de perfil")
     cropping = ImageRatioField('profile_picture', '300x300')  # Crop to a 300x300 square
     drive_url = models.URLField(blank=True, null=True)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='users', verbose_name="Usuario")
 
     class Meta:
         verbose_name = "Doctor"  # Singular name
         verbose_name_plural = "Doctores"  # Plural name
+        permissions = [
+            ("can_modify_doctor", "Can modify doctor"),
+        ]
+
 
     def __str__(self):
         return f"{self.name} ({self.specialization})"
@@ -145,9 +168,11 @@ class PatientParent(models.Model):
 
 
 class Patient(models.Model):
+
+
     name = models.CharField(max_length=200, default="",verbose_name="Nombre y apellido")
     birth_date = models.DateField(blank=True, null=True,verbose_name="Fecha de nacimiento")
-    parent = models.ForeignKey(PatientParent, on_delete=models.CASCADE, related_name='patient_parents', default="",verbose_name="Razón de consulta")
+    parent = models.ForeignKey(PatientParent, on_delete=models.CASCADE, related_name='patient_parents', default="",verbose_name="Representante")
 
     class Meta:
         verbose_name = "Paciente"  # Singular name
@@ -156,6 +181,10 @@ class Patient(models.Model):
     def __str__(self):
         return self.name
     
+    @property
+    def parent_name(self):
+        return self.parent.name
+
     @property
     def age(self):
         # Convert string to datetime object
@@ -188,6 +217,9 @@ class Appointment(models.Model):
         verbose_name = "Cita médica"  # Singular name
         verbose_name_plural = "Citas médicas"  # Plural name
         ordering = ['appointment_date']  # Default ordering
+        permissions = [
+            ("can_modify_appointment", "Can modify appointment"),
+        ]
 
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name='appointments', verbose_name="Doctor")
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='appointments', verbose_name="Paciente")
@@ -250,7 +282,7 @@ def send_scheduled_email(appointment, subject, template):
     patient = appointment.patient
     parent = appointment.patient.parent
     doctor = appointment.doctor  # Assuming doctor has an email field
-    retrieved_user = User.objects.all().first()
+    retrieved_user = CustomUser.objects.all().first()
 
     email_body = {
         "parent": {

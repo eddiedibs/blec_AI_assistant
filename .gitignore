@@ -10,3 +10,4 @@ frontend/static/main.js
 wschatbot/
 blec_api_service_account.json
 credentials.json
+*.sql

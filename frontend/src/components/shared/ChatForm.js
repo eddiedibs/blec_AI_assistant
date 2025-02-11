@@ -70,6 +70,8 @@ const ChatForm = ({ onSubmit }) => {
             [id]: value.trim() === "" || 
                 (id === "email" && !validateField(value, /^[^\s@]+@[^\s@]+\.[^\s@]+$/)) ||
                 (id === "phone_number" && !validateField(value, /^(0?(412|414|416|424|426))\d{7}$/)) ||
+                (id === "patient_name" && validateField(value, /[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g)) ||
+                (id === "parent_name" && validateField(value, /[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g)) ||
                 (id === "id_number" && !validateField(value, /^\d+$/))
         }));
     };
@@ -250,12 +252,12 @@ return (
             <div>
                 <label for="patient_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nombre y apellido del paciente</label>
                 <input onChange={handleChange}  type="text" id="patient_name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Coloca tu nombre" required />
-                {errors.patient_name && <p className="text-red-500 text-xs mt-1">Este campo es obligatorio</p>}
+                {errors.patient_name && <p className="text-red-500 text-xs mt-1">Campo inválido</p>}
             </div>
             <div>
                 <label for="parent_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nombre y apellido del representante</label>
                 <input onChange={handleChange}  type="text" id="parent_name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Coloca tu apellido" required />
-                {errors.parent_name && <p className="text-red-500 text-xs mt-1">Este campo es obligatorio</p>}
+                {errors.parent_name && <p className="text-red-500 text-xs mt-1">Campo inválido</p>}
             </div>
         </div>
         <div class="grid gap-6 mb-2 md:grid-cols-2">

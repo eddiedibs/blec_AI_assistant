@@ -101,6 +101,7 @@ REST_FRAMEWORK = {
 
 INSTALLED_APPS = [
     "jazzmin",  # Add before 'django.contrib.admin'
+    'users.apps.UsersConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -109,7 +110,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'api.apps.ApiConfig',
-    'users.apps.UsersConfig',
     'frontend.apps.FrontendConfig',
     'corsheaders',
     'image_cropping',
@@ -227,6 +227,7 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 
+AUTH_USER_MODEL = 'users.CustomUser'  # Replace 'your_app' with your actual app name
 
 
 MIDDLEWARE = [
@@ -242,6 +243,7 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'blec_proj.urls'
+BACKUP_DIR = os.path.join(BASE_DIR, 'backups')
 
 TEMPLATES = [
     {

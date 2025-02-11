@@ -4,6 +4,9 @@ import StreamComponent from "../components/StreamComponent";
 import ChatForm from "../components/shared/ChatForm";
 import axios from "axios";
 import { Spinner  } from "flowbite-react";
+import Lottie from "lottie-react";
+import nurseAnimation from "../animations/nurse.json"; // Import your animation JSON file
+import checkAnimation from "../animations/check.json"; // Import your animation JSON file
 
 const ChatUI = () => {
   const [isChatFormSubmitted, setIsChatFormSubmitted] = useState(false);
@@ -114,12 +117,23 @@ const ChatActionButtons = ({ isChatFormSubmitted, requestBody }) => {
 
   return (
     <div className="w-full h-full flex flex-col justify-end bg-white p-6 rounded-lg">
-      {isLoading && (
-          <div className="flex justify-center items-center">
-            <Spinner aria-label="Loading spinner" />
-            <span className="ml-2">Loading...</span>
-          </div>
+      <div className="flex justify-center flex-col items-center mb-6">
+      {isChatFormSubmitted && requestBody &&(
+        <div className="flex justify-center flex-row items-center mb-6">
+          <Lottie className="w-[400px]" animationData={nurseAnimation} loop={true} />
+          <Lottie className="w-[200px]" animationData={checkAnimation} loop={false}/>
+        </div>
+
         )}
+        {isLoading && (
+            <div className="flex justify-center items-center">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
+              <span className="ml-2">Loading...</span>
+            </div>
+          )}
+      </div>
+
+      
       <div className="space-y-4 overflow-auto max-h-96">
       {messages
       .filter((message) => message.sender === "chatbot")
@@ -139,6 +153,8 @@ const ChatActionButtons = ({ isChatFormSubmitted, requestBody }) => {
             onStreamUpdate={handleStreamUpdate}
           />
         )} */}
+      
+
 
         {isChatFormSubmitted && requestBody &&(
           <StreamComponent

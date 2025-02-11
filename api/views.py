@@ -12,7 +12,10 @@ from django.http import JsonResponse
 from django.contrib import messages
 from django.urls import reverse_lazy
 from django.utils import timezone
-from django.contrib.auth.models import User
+# from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+User = get_user_model()  # This will now reference 'users.CustomUser'
+
 from django.utils.timezone import now
 from django.conf import settings
 
